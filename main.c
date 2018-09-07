@@ -18,7 +18,7 @@
 #	define unlikely(exp) __builtin_expect((exp), 0)
 #endif
 
-#include "sha1.h"
+#include "sha1.c"
 
 typedef int (*test_func_t)(
 	const unsigned char *, const unsigned char *, int, char);
@@ -112,20 +112,15 @@ static int prefix_half_test(const unsigned char *hash,
 	return 1;
 }
 
-static int get_current_hash(unsigned char hash[20]) {
+static void get_current_hash(unsigned char hash[20]) {
 	unsigned char temp[128];
-	FILE *fp;
-	if (unlikely((fp = popen("git rev-parse HEAD", "r")) == NULL ||
-		    fgets((char *) temp, 128, fp))) {
-		fprintf(stderr, "Unable to run commands!\n");
-		return 1;
-	}
+	FILE *fp = popen("git rev-parse HEAD", "r");
+	fgets((char *) temp, 80, fp);
 	if (unlikely(decode_hex((const char *) temp, hash, 40) == 1)) {
 		fprintf(stderr, "Git error: %s\n", temp);
-		return 1;
+		return;
 	}
 	pclose(fp);
-	return 0;
 }
 
 static int get_commit_data(char output[1024]) {
@@ -222,12 +217,12 @@ static void prepare_env(const char* commit_template, const char *committer_date)
 	// TODO: here
 	char commit[999];
 	strcpy(commit, commit_template);
-	setenv("GIT_AUTHOR_NAME", committer_date, 1);
-	setenv("GIT_AUTHOR_EMAIL", committer_date, 1);
+	//setenv("GIT_AUTHOR_NAME", committer_date, 1);
+	//setenv("GIT_AUTHOR_EMAIL", committer_date, 1);
 	// broken: setenv("GIT_AUTHOR_DATE", author_date, 1);
 	setenv("GIT_COMMITTER_DATE", committer_date, 1);
-	setenv("GIT_COMMITTER_EMAIL", committer_date, 1);
-	setenv("GIT_COMMITTER_NAME", committer_date, 1);
+	//setenv("GIT_COMMITTER_EMAIL", committer_date, 1);
+	//setenv("GIT_COMMITTER_NAME", committer_date, 1);
 }
 
 int main(int argc, char **argv) {
@@ -314,7 +309,6 @@ int main(int argc, char **argv) {
 		// TODO: tune
 		.delta = 1 << (4 * prefix_len) / (threads + 1) << 6,
 		.thread_count = threads};
-	printf("%d\n", common.delta);
 
 	if (argc == 3) {
 		if (unlikely(check_timezone(argv[2]) == 1)) return 1;
@@ -389,7 +383,7 @@ memcpy(x, y, 10); \
 
 	char final_hash[20];
 	get_current_hash(final_hash);
-	if (memcmp(final_hash, solution_output.calculated_hash)) {
+	if (memcmp(final_hash, solution_output.calculated_hash, 20)) {
 		fprintf(stderr, "Calculated hash doesn't match the final hash!!! :(\n");
 	}
 	return 0;
@@ -444,6 +438,7 @@ static void *thread(void *ptr) {
 		}
 		for (int i = 0; i < thread_count; i++)
 			decrement_string_num(author_timestamp_loc);
+		memcpy(committer_timestamp_loc, author_timestamp_loc, 10);
 	}
 	return NULL;
 }

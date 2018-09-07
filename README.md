@@ -31,13 +31,13 @@ Go to [releases](/releases)
 Linux & Mac:
 
 ```
-gcc-8 sha1.c main.c -lpthread -Ofast -march=native -o VanityCommit
+gcc-8 main.c -lpthread -Ofast -march=native -o VanityCommit
 ```
 
 Windows (Visual Studio Developer Tools): // Coming SOON
 
 ```
-cl sha1.c main.c -o VanityCommit
+cl main.c -o VanityCommit
 ```
 
 ## Behind the scenes

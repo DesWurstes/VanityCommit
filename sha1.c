@@ -25,6 +25,20 @@
 #include <stddef.h>
 #include <string.h>
 
+// sha1.h
+/*
+typedef struct _SHA1_CTX {
+	uint32_t s[5];
+	unsigned char buf[64];
+	uint64_t bytes;
+} SHA1_CTX;
+
+static void SHA1_WRITE(SHA1_CTX *sha1_ctx, const unsigned char *data, size_t len);
+static void SHA1_NEW(SHA1_CTX *sha1_ctx);
+static void SHA1_COPY(SHA1_CTX *to, const SHA1_CTX *from);
+static void SHA1_FINALIZE(SHA1_CTX *sha1_ctx, unsigned char hash[20]);
+*/
+
 #if !defined(LITTLE_ENDIAN) && !defined(BIG_ENDIAN)
 #	ifdef __GNUC__
 #		if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
@@ -126,10 +140,10 @@ static inline uint32_t f3(uint32_t b, uint32_t c, uint32_t d) {
 
 static inline uint32_t left(uint32_t x) { return (x << 1) | (x >> 31); }
 
-const uint32_t k1 = 0x5A827999ul;
-const uint32_t k2 = 0x6ED9EBA1ul;
-const uint32_t k3 = 0x8F1BBCDCul;
-const uint32_t k4 = 0xCA62C1D6ul;
+const static uint32_t k1 = 0x5A827999ul;
+const static uint32_t k2 = 0x6ED9EBA1ul;
+const static uint32_t k3 = 0x8F1BBCDCul;
+const static uint32_t k4 = 0xCA62C1D6ul;
 
 /** Perform a SHA-1 transformation, processing a 64-byte chunk. */
 static void Transform(uint32_t *s, const unsigned char *chunk) {
@@ -258,7 +272,7 @@ typedef struct _SHA1_CTX {
 	uint64_t bytes;
 } SHA1_CTX;
 
-void SHA1_NEW(SHA1_CTX *sha1_ctx) {
+static void SHA1_NEW(SHA1_CTX *sha1_ctx) {
 	sha1_ctx->bytes = 0;
 	sha1_ctx->s[0] = 0x67452301ul;
 	sha1_ctx->s[1] = 0xEFCDAB89ul;
@@ -267,7 +281,7 @@ void SHA1_NEW(SHA1_CTX *sha1_ctx) {
 	sha1_ctx->s[4] = 0xC3D2E1F0ul;
 }
 
-void SHA1_WRITE(SHA1_CTX *sha1_ctx, const unsigned char *data, size_t len) {
+static void SHA1_WRITE(SHA1_CTX *sha1_ctx, const unsigned char *data, size_t len) {
 	const unsigned char *end = data + len;
 	size_t bufsize = sha1_ctx->bytes % 64;
 	if (bufsize && bufsize + len >= 64) {
@@ -288,13 +302,13 @@ void SHA1_WRITE(SHA1_CTX *sha1_ctx, const unsigned char *data, size_t len) {
 	}
 }
 
-void SHA1_COPY(SHA1_CTX *to, const SHA1_CTX *from) {
+static void SHA1_COPY(SHA1_CTX *to, const SHA1_CTX *from) {
 	memcpy(to->s, from->s, 5 * sizeof(uint32_t));
 	memcpy(to->buf, from->buf, 64);
 	to->bytes = from->bytes;
 }
 
-void SHA1_FINALIZE(SHA1_CTX *sha1_ctx, unsigned char hash[20]) {
+static void SHA1_FINALIZE(SHA1_CTX *sha1_ctx, unsigned char hash[20]) {
 	static const unsigned char pad[64] = {0x80};
 	unsigned char sizedesc[8];
 	WriteBE64(sizedesc, sha1_ctx->bytes << 3);
