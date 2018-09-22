@@ -140,10 +140,10 @@ static inline uint32_t f3(uint32_t b, uint32_t c, uint32_t d) {
 
 static inline uint32_t left(uint32_t x) { return (x << 1) | (x >> 31); }
 
-const static uint32_t k1 = 0x5A827999ul;
-const static uint32_t k2 = 0x6ED9EBA1ul;
-const static uint32_t k3 = 0x8F1BBCDCul;
-const static uint32_t k4 = 0xCA62C1D6ul;
+static const uint32_t k1 = 0x5A827999ul;
+static const uint32_t k2 = 0x6ED9EBA1ul;
+static const uint32_t k3 = 0x8F1BBCDCul;
+static const uint32_t k4 = 0xCA62C1D6ul;
 
 /** Perform a SHA-1 transformation, processing a 64-byte chunk. */
 static void Transform(uint32_t *s, const unsigned char *chunk) {

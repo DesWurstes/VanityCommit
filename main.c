@@ -116,10 +116,8 @@ static void get_current_hash(unsigned char hash[20]) {
 	unsigned char temp[128];
 	FILE *fp = popen("git rev-parse HEAD", "r");
 	fgets((char *) temp, 80, fp);
-	if (unlikely(decode_hex((const char *) temp, hash, 40) == 1)) {
+	if (unlikely(decode_hex((const char *) temp, hash, 40) == 1))
 		fprintf(stderr, "Git error: %s\n", temp);
-		return;
-	}
 	pclose(fp);
 }
 
@@ -309,7 +307,7 @@ int main(int argc, char **argv) {
 		// TODO: tune
 		.delta = 1 << (4 * prefix_len) / (threads + 1) << 6,
 		.thread_count = threads};
-
+	puts("Starting...");
 	if (argc == 3) {
 		if (unlikely(check_timezone(argv[2]) == 1)) return 1;
 		memcpy(end_of_first_mail_space + 12, argv[2], 5);
@@ -382,7 +380,7 @@ memcpy(x, y, 10); \
 	system("git log --pretty=fuller -1 HEAD");
 
 	char final_hash[20];
-	get_current_hash(final_hash);
+	get_current_hash((unsigned char *) final_hash);
 	if (memcmp(final_hash, solution_output.calculated_hash, 20)) {
 		fprintf(stderr, "Calculated hash doesn't match the final hash!!! :(\n");
 	}
@@ -410,19 +408,19 @@ static void *thread(void *ptr) {
 	SHA1_CTX hash;
 	SHA1_COPY(&hash, common->precalc);
 
+	// Recall that normally "author_timestamp <= committer_timestamp"
 	char *const author_timestamp_loc = commit_continue + author_timestamp_offset;
 	char *const committer_timestamp_loc = commit_continue + committer_timestamp_offset;
-	char committer_timestamp_start[10];
-	memcpy(committer_timestamp_start, committer_timestamp_loc, 10);
 
 	for (int i = 0; i < thread_id; i++)
-		decrement_string_num(author_timestamp_loc);
+		decrement_string_num(committer_timestamp_loc);
+	memcpy(author_timestamp_loc, committer_timestamp_loc, 10);
 
 	SHA1_CTX temp_hash;
 	char hash_out[20];
 	while (!*halt) {
 		for (int i = 0; i < delta; i++) {
-			decrement_string_num(committer_timestamp_loc);
+			decrement_string_num(author_timestamp_loc);
 			SHA1_COPY(&temp_hash, &hash);
 			SHA1_WRITE(&temp_hash, (const unsigned char *) commit_continue, commit_continue_length);
 			SHA1_FINALIZE(&temp_hash, (unsigned char *) hash_out);
@@ -437,8 +435,8 @@ static void *thread(void *ptr) {
 			}
 		}
 		for (int i = 0; i < thread_count; i++)
-			decrement_string_num(author_timestamp_loc);
-		memcpy(committer_timestamp_loc, author_timestamp_loc, 10);
+			decrement_string_num(committer_timestamp_loc);
+		memcpy(author_timestamp_loc, committer_timestamp_loc, 10);
 	}
 	return NULL;
 }
