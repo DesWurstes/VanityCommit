@@ -60,6 +60,10 @@ Use `git log --pretty=fuller -1 <hash>` or `git cat-file -p <hash>`, then compar
 
 - [git-vanity-sha](https://github.com/mattbaker/git-vanity-sha): Very polite, asks you for amendment confirmation, and pretty fast. Works similar to Vanity Commit. Unfortunately, it gives up when it reaches the constant.
 
+- [lhc](https://github.com/stuartpb/lhc): Written in early-2013-era Node.js - this implementation is unique in that it inserts from a word list into the content of the commit message to find the collision.
+
+- [the "lulz header"](http://lists-archives.com/git/756392-choosing-the-sha1-prefix-of-your-commits.html): a patch from 2011 that adds this functionality to `git-commit` itself
+
 ## TODO
 
 - [ ] Search for multiple prefixes
